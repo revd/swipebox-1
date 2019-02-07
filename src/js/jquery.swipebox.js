@@ -24,13 +24,13 @@
 				loopAtEnd: false,
 				autoplayVideos: false,
 				queryStringData: {},
-				toggleClassOnLoad: ''
+				toggleClassOnLoad: '',
+				selector: ''
 			},
 
 			plugin = this,
 			elements = [], // slides array [ { href:'...', title:'...' }, ...],
 			$elem,
-			selector = elem.selector,
 			isMobile = navigator.userAgent.match( /(iPad)|(iPhone)|(iPod)|(Android)|(PlayBook)|(BB10)|(BlackBerry)|(Opera Mini)|(IEMobile)|(webOS)|(MeeGo)/i ),
 			isTouch = isMobile !== null || document.createTouch !== undefined || ( 'ontouchstart' in window ) || ( 'onmsgesturechange' in window ) || navigator.msMaxTouchPoints,
 			supportSVG = !! document.createElementNS && !! document.createElementNS( 'http://www.w3.org/2000/svg', 'svg').createSVGRect,
@@ -59,10 +59,6 @@
 		$.swipebox.close = function () {
 			ui.closeSlide();
 		};
-		
-		$.swipebox.destroy = function () {
-			$( document ).off( 'click.swipebox' );
-		};
 
 		$.swipebox.extend = function () {
 			return ui;
@@ -80,7 +76,7 @@
 
 			} else {
 
-				$( document ).on( 'click.swipebox', selector, function( event ) {
+				$( document ).on( 'click', plugin.settings.selector, function( event ) {
 
 					// console.log( isTouch );
 
@@ -91,7 +87,7 @@
 
 					if ( ! $.isArray( elem ) ) {
 						ui.destroy();
-						$elem = $( selector );
+						$elem = $( plugin.settings.selector );
 						ui.actions();
 					}
 
@@ -110,9 +106,9 @@
 					}
 
 					if ( relVal && relVal !== '' && relVal !== 'nofollow' ) {
-						$elem = $( selector ).filter( '[' + relType + '="' + relVal + '"]' );
+						$elem = $( plugin.settings.selector ).filter( '[' + relType + '="' + relVal + '"]' );
 					} else {
-						$elem = $( selector );
+						$elem = $( plugin.settings.selector );
 					}
 
 					$elem.each( function() {
@@ -174,11 +170,7 @@
 				$( 'body' ).append( html );
 
 				if ( supportSVG && plugin.settings.useSVG === true ) {
-					bg = $( '#swipebox-close' ).css( 'background-image' );
-					bg = bg.replace( 'png', 'svg' );
-					$( '#swipebox-prev, #swipebox-next, #swipebox-close' ).css( {
-						'background-image' : bg
-					} );
+					$('#swipebox-prev, #swipebox-next, #swipebox-close').addClass('svg');
 				}
 
 				if ( isMobile && plugin.settings.removeBarsOnMobile ) {
@@ -588,7 +580,9 @@
 					} );
 				}
 
-				$( '#swipebox-close' ).bind( action, function() {
+				$( '#swipebox-close' ).bind( action, function( event ) {
+					event.preventDefault();
+					event.stopPropagation();
 					$this.closeSlide();
 				} );
 			},
@@ -760,7 +754,7 @@
 				if ( a.search ) {
 					qs = JSON.parse( '{"' + a.search.toLowerCase().replace('?','').replace(/&/g,'","').replace(/=/g,'":"') + '"}' );
 				}
-				
+
 				// Extend with custom data
 				if ( $.isPlainObject( customData ) ) {
 					qs = $.extend( qs, customData, plugin.settings.queryStringData ); // The dev has always the final word
